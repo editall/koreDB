@@ -24,7 +24,7 @@ abstract class Table<TABLE extends Table<TABLE>>{
                     this.#scaned.set(type, [keyPath = k, k[0] === "$"]);
                 }
             });
-            if(keyPath) exit(`no keyPath defined`);
+            if(!keyPath) exit(`no keyPath defined`);
         }
     }
     static keyPath<T extends Table<T>>(type:new ()=>T):string{
