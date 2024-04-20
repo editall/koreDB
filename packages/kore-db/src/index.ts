@@ -1,1 +1,1 @@
-export const sample = "Hello, world!";
+export {Table} from "./Table";
