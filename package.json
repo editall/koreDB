@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "site": "pnpm --filter=site",
+    "site": "pnpm --filter=vite-project",
     "siteDev": "pnpm site dev",
     "kore-db": "pnpm --filter=@edit-all/kore-db",
     "lint": "pnpm -r lint",

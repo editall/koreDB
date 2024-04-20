@@ -1,2 +1,3 @@
-export {Table, TableWrapper} from "./Table";
-export {DB} from "./DB";
+"use client";
+export { Table, TableWrapper } from "./Table";
+export { DB } from "./DB";
