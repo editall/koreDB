@@ -8,5 +8,5 @@ export const viewport: Viewport = {
 };
 
 export default function Home() {
-  return sample;
+  return "hello";
 }
