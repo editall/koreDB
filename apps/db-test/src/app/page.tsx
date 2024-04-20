@@ -1,3 +1,4 @@
+"use client";
 import { Viewport } from "next";
 import { Client } from "./client";
 

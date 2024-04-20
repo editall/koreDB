@@ -18,8 +18,11 @@ abstract class Table<TABLE extends Table<TABLE>>{
         if(!this.#scaned.has(type)){
             const table = new type();
             let keyPath = "";
+            console.log("--------", type.name, table, Object.keys(table));
             Reflect.ownKeys(table).forEach(k=>{
+                console.log(0, type.name, k);
                 if(typeof k === "string" && "$_".indexOf(k[0]) != -1){
+                    console.log(1, type.name, k);
                     if(keyPath) exit(`#keyPath already defined:${String(keyPath)}`);
                     this.#scaned.set(type, [keyPath = k, k[0] === "$"]);
                 }
