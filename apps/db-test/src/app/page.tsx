@@ -1,4 +1,3 @@
-import { sample } from "my-library";
 import { Viewport } from "next";
 
 export const viewport: Viewport = {
