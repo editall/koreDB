@@ -1,1 +1,2 @@
-export {Table} from "./Table";
+export {Table, TableWrapper} from "./Table";
+export {DB} from "./DB";
