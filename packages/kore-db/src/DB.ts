@@ -1,6 +1,9 @@
-import { exit } from "./exit";
-import { r2p } from "./r2p";
-import { Table, TableWrapper } from "./Table";
+import {exit} from "./exit";
+import {r2p} from "./r2p";
+import {Table, TableWrapper} from "./Table";
+import {Query, QueryMode} from "./Query.ts";
+import {Join} from "./Join.ts";
+
 // import {Query} from "./Query.ts";
 
 abstract class DB {
@@ -57,10 +60,10 @@ abstract class DB {
   async count(store: IDBObjectStore) {
     return await r2p(store.count());
   }
-  // async select(from, block) {
-  //     this.#isFirst || await this.#openAwait;
-  //     return new Query("select", from, this, block);
-  // }
+  async select<FROM extends Table<FROM>>(from:new ()=>FROM, block:(query:Query<FROM>, join:Join<FROM>)=>void) {
+      this.#isFirst || await this.#openAwait;
+      return new Query(QueryMode.SELECT, from, this, block);
+  }
   // async update(from, block) {
   //     this.#isFirst || await this.#openAwait;
   //     return new Query("update", from, this, block);
