@@ -1,69 +1,70 @@
-// import {Where} from "./Where.ts";
 import {DB} from "./DB.ts";
 import {Join} from "./Join.ts";
+import {r2p} from "./r2p.ts";
 import {Table} from "./Table.ts";
 import {Where} from "./Where.ts";
 
 enum QueryMode{SELECT, UPDATE, DELETE, INSERT}
 
 type Projection = {index:number, key:string, toKey:string};
-class Query<FROM extends Table<FROM>> {
-    #mode: QueryMode;
-    joins: Join<any>[];
-    #db: DB;
-    where = new Where();
-    #fields:Projection[] = [];
-    #order:{key:string, isAsc:boolean}[] = [];
-    #setFields = [];
 
-    constructor(mode: QueryMode, from: new () => FROM, db: DB, block: (query: Query<FROM>, join: Join<FROM>) => void) {
+class Query<FROM extends Table<FROM>>{
+    readonly #mode:QueryMode;
+    readonly #db:DB;
+    readonly joins:Join<any>[] = [];
+    readonly #fields:Projection[] = [];
+    readonly #setFields:{key:string, type:string, v0:any, v1:any}[] = [];
+    readonly where:Where = new Where();
+    readonly #order:{key:string, isAsc:boolean}[] = [];
+
+    constructor(mode:QueryMode, from:new ()=>FROM, db:DB, block:(query:Query<FROM>, join:Join<FROM>)=>void){
         this.#mode = mode;
         this.#db = db;
         const join = new Join(this, from, undefined, 0, undefined);
-        this.joins = [join];
+        this.joins.push(join);
         block(this, join);
     }
-    project<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, toKey:string) {
+    project<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, toKey:string){
         this.#fields.push({index:this.joins.indexOf(join), key:String(key), toKey});
         return this;
     }
-    setField(key, type, v0, v1){
-        // this.#setFields.push({key, type, v0, v1});
-        // return this;
+    setField(key:string, type:string, v0:any, v1:any){
+        this.#setFields.push({key, type, v0, v1});
+        return this;
     }
-    orderBy(key, isAsc = true) {
+    orderBy(key, isAsc = true){
         this.#order.push({key, isAsc});
         return this;
     }
-    equal<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, paramIndex:number, paramKey:string):this{
+    E<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, paramIndex:number, paramKey:string):this{
         this.where.addOP("=", this.joins.indexOf(join), String(key), paramIndex, paramKey);
         return this;
     }
-    notEqual<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, paramIndex:number, paramKey:string):this{
+    NE<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, paramIndex:number, paramKey:string):this{
         this.where.addOP("!=", this.joins.indexOf(join), String(key), paramIndex, paramKey);
         return this;
     }
-    lessThan<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, paramIndex:number, paramKey:string):this{
+    LT<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, paramIndex:number, paramKey:string):this{
         this.where.addOP("<", this.joins.indexOf(join), String(key), paramIndex, paramKey);
         return this;
     }
-    lessThanOrEqual<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, paramIndex:number, paramKey:string):this{
+    LTE<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, paramIndex:number, paramKey:string):this{
         this.where.addOP("<=", this.joins.indexOf(join), String(key), paramIndex, paramKey);
         return this;
     }
-    greaterThan<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, paramIndex:number, paramKey:string):this{
+    GT<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, paramIndex:number, paramKey:string):this{
         this.where.addOP(">", this.joins.indexOf(join), String(key), paramIndex, paramKey);
         return this;
     }
-    greaterThanOrEqual<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, paramIndex:number, paramKey:string):this{
+    GTE<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, paramIndex:number, paramKey:string):this{
         this.where.addOP(">=", this.joins.indexOf(join), String(key), paramIndex, paramKey);
         return this;
     }
-    like<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, paramIndex:number, paramKey:string):this{
+    LIKE<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, paramIndex:number, paramKey:string):this{
         this.where.addOP("like", this.joins.indexOf(join), String(key), paramIndex, paramKey);
         return this;
     }
-    notLike<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, paramIndex:number, paramKey:string):this{
+    NLIKE<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, paramIndex:number, paramKey:string):this{
         this.where.addOP("not like", this.joins.indexOf(join), String(key), paramIndex, paramKey);
         return this;
     }
@@ -71,52 +72,55 @@ class Query<FROM extends Table<FROM>> {
         this.where.addOP("in", this.joins.indexOf(join), String(key), paramIndex, paramKey);
         return this;
     }
-    notIn<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, paramIndex:number, paramKey:string):this{
+    NIN<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, paramIndex:number, paramKey:string):this{
         this.where.addOP("not in", this.joins.indexOf(join), String(key), paramIndex, paramKey);
         return this;
     }
-    and():this{
-        if("and|or".indexOf(this.where.where[this.where.where.length - 1].op) !== -1) throw new Error("invalid operation");
-        this.where.where.push({op:"and"});
+    get AND():this{
+        this.where.connector("and");
         return this;
     }
-    or():this{
-        if("and|or".indexOf(this.where.where[this.where.where.length - 1].op) !== -1) throw new Error("invalid operation");
-        this.where.where.push({op:"or"});
+    get OR():this{
+        this.where.connector("or");
         return this;
     }
-    async query(...params){
-        if(this.#mode === QueryMode.SELECT && !this.#fields.length) throw new Error("no projection field");
-        if("update|insert".indexOf(this.#mode) !== -1 && !this.#setFields.length) throw new Error("no update field");
+    async query(...params:object[]){
+        switch(this.#mode){
+        case QueryMode.SELECT:{if(!this.#fields.length) throw new Error("no projection field"); break;}
+        case QueryMode.UPDATE:{if(!this.#setFields.length) throw new Error("no update field"); break;}
+        case QueryMode.INSERT:{if(!this.#setFields.length) throw new Error("no update field"); break;}
+        }
         const txStore = Object.create(null);
         txStore.__tx = this.#db.transaction();
         txStore.__max = 0;
-        const table = this.joins[0].table;
+        const table = this.joins[0].table.name;
         const store = txStore[table] ?? (txStore[table] = txStore.__tx.objectStore(table));
         txStore[0] = store.keyPath;
-        let i = 1, j = this.joins.length, rs;
+        const j = this.joins.length;
+        let i = 1, rs;
         if(j === 1){
             rs = await r2p(store.getAll());
-            if(rs.length) rs = rs.map(t=>{
+            if(rs.length) rs = rs.map((t:any)=>{
                 const record = Object.create(null);
                 record[0] = t;
                 return record;
             });
         }else while(i < j){
             const curr = this.joins[i];
-            const {table, join, tableKey, joinKey} = curr;
-            const store = txStore[table] ?? (txStore[table] = txStore.__tx.objectStore(table));
+            const {table, joinIndex, tableKey, joinKey} = curr;
+            const store = txStore[table.name] ?? (txStore[table.name] = txStore.__tx.objectStore(table.name));
             txStore[i] = store.keyPath;
             txStore.__max = i;
-            const joinIndex = this.joins.indexOf(join), joinStore = txStore[join.table];
-            if(!this.#db.count(store) || !this.#db.count(joinStore)){
+            const join = this.joins[joinIndex];
+            const joinStore = txStore[join.table.name];
+            if(!await this.#db.count(store) || !await this.#db.count(joinStore)){
                 rs = [];
                 break;
             }
-            if(tableKey !== store.keyPath && !store.indexNames.contains(tableKey)) throw new Error(`no such table(${table}) index: ${tableKey}`);
+            if(tableKey !== store.keyPath && !store.indexNames.contains(tableKey)) throw new Error(`no such table(${table.name}) index: ${tableKey}`);
             if(i === 1){
-                if(joinKey !== joinStore.keyPath &&  !joinStore.indexNames.contains(joinKey)) throw new Error(`no such join(${join.table}) index: ${joinKey}`);
-                rs = await new Promise((resolve, reject)=>{
+                if(joinKey !== joinStore.keyPath && !joinStore.indexNames.contains(joinKey)) throw new Error(`no such join(${join.table.name}) index: ${joinKey}`);
+                rs = await new Promise((resolve)=>{
                     const joined = [];
                     let cA, cB;
                     const f = (ab, a, b)=>{
@@ -132,13 +136,19 @@ class Query<FROM extends Table<FROM>> {
                             }
                         }
                         if(!cA || !cB) return;
-                        if(cA.value[tableKey] === cB.value[joinKey]) {
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        if(cA.value[tableKey] === cB.value[joinKey]){
                             const record = Object.create(null);
                             record[i] = cA.value;
                             record[joinIndex] = cB.value;
+                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                            // @ts-ignore
                             joined.push(record);
                             cA.continue();
                             cA = null;
+                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                            // @ts-ignore
                         }else if(cA.value[tableKey] < cB.value[joinKey]){
                             cA.continue();
                             cA = null;
@@ -147,32 +157,45 @@ class Query<FROM extends Table<FROM>> {
                             cB = null;
                         }
                     };
-                    (tableKey === store.keyPath ? store : store.index(tableKey)).openCursor().onsuccess = e => f("a", e.target.result, null);
-                    (joinKey === joinStore.keyPath ? joinStore : joinStore.index(joinKey)).openCursor().onsuccess = e => f("b", null, e.target.result);
+                    (tableKey === store.keyPath ? store : store.index(tableKey)).openCursor().onsuccess = e=>f("a", e.target.result, null);
+                    (joinKey === joinStore.keyPath ? joinStore : joinStore.index(joinKey)).openCursor().onsuccess = e=>f("b", null, e.target.result);
                 });
             }else{
-                rs = await new Promise((resolve, reject) => {
+                rs = await new Promise((resolve)=>{
                     const joined = [];
-                    rs.sort((a, b) => {
+
+                    rs.sort((a, b)=>{
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
                         if(a[joinIndex][joinKey] > b[joinIndex][joinKey]) return 1;
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
                         if(a[joinIndex][joinKey] < b[joinIndex][joinKey]) return -1;
                         return 0;
                     });
                     let cA, rsIndex = 0;
                     const f = a=>{
-                        if(a) cA = a; else {
+                        if(a) cA = a; else{
                             resolve(joined);
                             return;
                         }
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
                         if(cA.value[tableKey] < rs[rsIndex][joinIndex][joinKey]){
                             cA.continue();
                             cA = null;
                             return;
                         }
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
                         while(rsIndex < rs.length && cA.value[tableKey] > rs[rsIndex][joinIndex][joinKey]) rsIndex++;
-                        while(rsIndex < rs.length && cA.value[tableKey] === rs[rsIndex][joinIndex][joinKey]) {
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        while(rsIndex < rs.length && cA.value[tableKey] === rs[rsIndex][joinIndex][joinKey]){
                             const record = Object.assign(Object.create(null), rs[rsIndex]);
                             record[i] = cA.value;
+                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                            // @ts-ignore
                             joined.push(record);
                             rsIndex++;
                         }
@@ -183,7 +206,7 @@ class Query<FROM extends Table<FROM>> {
                         cA.continue();
                         cA = null;
                     };
-                    (tableKey === store.keyPath ? store : store.index(tableKey)).openCursor().onsuccess = e => f(e.target.result);
+                    (tableKey === store.keyPath ? store : store.index(tableKey)).openCursor().onsuccess = e=>f(e.target.result);
                 });
             }
             if(!rs.length) break;
@@ -193,60 +216,76 @@ class Query<FROM extends Table<FROM>> {
         return new Promise((resolve, reject)=>{
             rs = this.where.whereProcess(txStore, rs, params);
             switch(this.#mode){
-                case "select":{
-                    const result = rs.map(r=>this.#fields.reduce((acc, {join, key, toKey})=>{
-                        const joinIndex = this.joins.indexOf(join);
-                        acc[toKey ?? key] = r[joinIndex][key];
-                        return acc;
-                    }, Object.create(null)));
-                    if(this.#order.length){
-                        result.sort((a, b)=>{
-                            let i = 0, j = this.#order.length;
-                            while(i < j){
-                                const {key, isAsc} = this.#order[i++];
-                                if(a[key] > b[key]) return isAsc ? 1 : -1;
-                                if(a[key] < b[key]) return isAsc ? -1 : 1;
-                            }
-                            return 0;
-                        });
-                    }
-                    txStore.__tx.oncomplete =_=>resolve(result);
-                    break;
-                }
-                case "delete":{
-                    rs.forEach(r=>r2p(txStore[this.joins[0].table].delete(r[0][txStore[0]])))
-                    txStore.__tx.oncomplete =_=>resolve;
-                    break;
-                }
-                case "update":{
-                    rs.map(r=>{
-                        const update = this.#setFields.reduce((acc, {key, type, v0, v1})=>{
-                            switch(type){
-                                case "v":{acc[key] = v0; break;}
-                                case "p":{acc[key] = params[v0][v1]; break;}
-                                case "j":{acc[key] = r[v0][v1]; break;}
-                            }
-                            return acc;
-                        }, Object.create(null));
-                        update[txStore[0]] = r[0][txStore[0]];
-                        r2p(txStore[this.joins[0].table].put(update))
+            case QueryMode.SELECT:{
+                const result = rs.map(r=>this.#fields.reduce((acc, {index, key, toKey})=>{
+                    acc[toKey ?? key] = r[index][key];
+                    return acc;
+                }, Object.create(null)));
+                if(this.#order.length){
+                    result.sort((a, b)=>{
+                        const j = this.#order.length;
+                        let i = 0;
+                        while(i < j){
+                            const {key, isAsc} = this.#order[i++];
+                            if(a[key] > b[key]) return isAsc ? 1 : -1;
+                            if(a[key] < b[key]) return isAsc ? -1 : 1;
+                        }
+                        return 0;
                     });
-                    txStore.__tx.oncomplete = resolve;
-                    break;
                 }
-                case "insert":{
-                    rs.forEach(r=>r2p(txStore[this.joins[0].table].add(
-                        this.#setFields.reduce((acc, {key, type, v0, v1})=>{
-                            switch(type){
-                                case "v":{acc[key] = v0; break;}
-                                case "p":{acc[key] = params[v0][v1]; break;}
-                                case "j":{acc[key] = r[v0][v1]; break;}
-                            }
-                            return acc;
-                        }, Object.create(null))))
-                    );
-                    txStore.__tx.oncomplete = resolve;
-                }
+                txStore.__tx.oncomplete =()=>resolve(result);
+                break;
+            }
+            case QueryMode.DELETE:{
+                rs.forEach(r=>r2p(txStore[this.joins[0].table.name].delete(r[0][txStore[0]])))
+                txStore.__tx.oncomplete = _=>resolve;
+                break;
+            }
+            case QueryMode.UPDATE:{
+                rs.map(r=>{
+                    const update = this.#setFields.reduce((acc, {key, type, v0, v1})=>{
+                        switch(type){
+                        case "v":{
+                            acc[key] = v0;
+                            break;
+                        }
+                        case "p":{
+                            acc[key] = params[v0][v1];
+                            break;
+                        }
+                        case "j":{
+                            acc[key] = r[v0][v1];
+                            break;
+                        }
+                        }
+                        return acc;
+                    }, Object.create(null));
+                    update[txStore[0]] = r[0][txStore[0]];
+                    r2p(txStore[this.joins[0].table.name].put(update))
+                });
+                txStore.__tx.oncomplete = resolve;
+                break;
+            }
+            case QueryMode.INSERT:{
+                rs.forEach(r=>r2p(txStore[this.joins[0].table.name].add(this.#setFields.reduce((acc, {key, type, v0, v1})=>{
+                    switch(type){
+                    case "v":{
+                        acc[key] = v0;
+                        break;
+                    }
+                    case "p":{
+                        acc[key] = params[v0][v1];
+                        break;
+                    }
+                    case "j":{
+                        acc[key] = r[v0][v1];
+                        break;
+                    }
+                    }
+                    return acc;
+                }, Object.create(null)))));
+                txStore.__tx.oncomplete = resolve;
+            }
             }
             txStore.__tx.onerror = reject;
             txStore.__tx.commit();
@@ -254,4 +293,4 @@ class Query<FROM extends Table<FROM>> {
     }
 }
 
-export { Query, QueryMode };
+export {Query, QueryMode};
