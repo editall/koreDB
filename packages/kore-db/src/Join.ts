@@ -15,7 +15,7 @@ class Join<TABLE extends Table<TABLE>>{
         this.joinKey = joinKey;
     }
     join<JOIN extends Table<JOIN>>(table:new ()=>JOIN, tableKey:keyof JOIN, joinKey:keyof TABLE):Join<JOIN>{
-        const j = new Join(this.#query, table, tableKey, this.joinIndex, String(joinKey));
+        const j = new Join(this.#query, table, tableKey, this.#query.joins.indexOf(this), String(joinKey));
         this.#query.joins.push(j);
         return j;
     }

@@ -163,7 +163,6 @@ class Query<FROM extends Table<FROM>>{
             }else{
                 rs = await new Promise((resolve)=>{
                     const joined = [];
-
                     rs.sort((a, b)=>{
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore

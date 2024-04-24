@@ -102,7 +102,7 @@ abstract class DB{
         const isAutoIncrement = Table.autoIncrement(table);
         const keyPath = Table.keyPath(table);
         data.forEach(d=>{
-            if(isAutoIncrement) d[keyPath] = undefined;
+            if(isAutoIncrement) delete d[keyPath];
             store.add(d)
         });
         return r2p(tx) as Promise<void>;
