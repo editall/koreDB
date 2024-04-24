@@ -42,7 +42,7 @@ class Where{
                     break;
                 }
                 case "not like": {
-                    curr = rs.filter(r=>{
+                    curr = rs.filter((r:any)=>{
                         const k = r[joinIndex][key];
                         if(v[0] === "%" && v[v.length - 1] === "%") return k.indexOf(v.slice(1, -1)) === -1;
                         else if(v[0] === "%") return !k.endsWith(v.slice(1));

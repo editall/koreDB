@@ -36,7 +36,8 @@ abstract class DB{
     readonly #openAwait:Promise<void>;
     #isFirst:boolean = false;
     #db:IDBDatabase|undefined;
-    protected constructor(name:string, version:number = 1){
+    constructor(name:string|undefined = undefined, version:number = 1){
+        if(!name) name = this.constructor.name;
         this.#openAwait = new Promise((resolve, reject)=>{
             const request = indexedDB.open(name, version);
             request.onerror = (e)=>{
@@ -102,7 +103,7 @@ abstract class DB{
         const isAutoIncrement = Table.autoIncrement(table);
         const keyPath = Table.keyPath(table);
         data.forEach(d=>{
-            if(isAutoIncrement) delete d[keyPath];
+            if(isAutoIncrement) delete (d as any)[keyPath];
             store.add(d)
         });
         return r2p(tx) as Promise<void>;

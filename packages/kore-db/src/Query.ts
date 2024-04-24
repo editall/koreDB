@@ -5,7 +5,7 @@ import {Table} from "./Table.ts";
 import {Where} from "./Where.ts";
 
 enum QueryMode{SELECT, UPDATE, DELETE, INSERT}
-
+enum FieldType{VALUE, PARAM, JOIN}
 type Projection = {index:number, key:string, toKey:string};
 
 class Query<FROM extends Table<FROM>>{
@@ -13,7 +13,7 @@ class Query<FROM extends Table<FROM>>{
     readonly #db:DB;
     readonly joins:Join<any>[] = [];
     readonly #fields:Projection[] = [];
-    readonly #setFields:{key:string, type:string, v0:any, v1:any}[] = [];
+    readonly #setFields:{key:string, type:FieldType, v0:any, v1:any}[] = [];
     readonly where:Where = new Where();
     readonly #order:{key:string, isAsc:boolean}[] = [];
 
@@ -28,11 +28,19 @@ class Query<FROM extends Table<FROM>>{
         this.#fields.push({index:this.joins.indexOf(join), key:String(key), toKey});
         return this;
     }
-    setField(key:string, type:string, v0:any, v1:any){
-        this.#setFields.push({key, type, v0, v1});
+    setFieldParam(key:keyof FROM, v0:any, v1:any){
+        this.#setFields.push({key:String(key), type:FieldType.PARAM, v0, v1});
         return this;
     }
-    orderBy(key, isAsc = true){
+    setFieldValue(key:keyof FROM, value:any){
+        this.#setFields.push({key:String(key), type:FieldType.VALUE, v0:value, v1:0});
+        return this;
+    }
+    setFieldJoin<TABLE extends Table<TABLE>>(key:keyof FROM, join:Join<TABLE>, joinKey:keyof TABLE){
+        this.#setFields.push({key:String(key), type:FieldType.JOIN, v0:this.joins.indexOf(join), v1:String(joinKey)});
+        return this;
+    }
+    orderBy(key:string, isAsc = true){
         this.#order.push({key, isAsc});
         return this;
     }
@@ -97,7 +105,7 @@ class Query<FROM extends Table<FROM>>{
         const store = txStore[table] ?? (txStore[table] = txStore.__tx.objectStore(table));
         txStore[0] = store.keyPath;
         const j = this.joins.length;
-        let i = 1, rs;
+        let i = 1, rs:any;
         if(j === 1){
             rs = await r2p(store.getAll());
             if(rs.length) rs = rs.map((t:any)=>{
@@ -121,9 +129,9 @@ class Query<FROM extends Table<FROM>>{
             if(i === 1){
                 if(joinKey !== joinStore.keyPath && !joinStore.indexNames.contains(joinKey)) throw new Error(`no such join(${join.table.name}) index: ${joinKey}`);
                 rs = await new Promise((resolve)=>{
-                    const joined = [];
-                    let cA, cB;
-                    const f = (ab, a, b)=>{
+                    const joined:any = [];
+                    let cA:any, cB:any;
+                    const f = (ab:string, a:any, b:any)=>{
                         if(ab === "a"){
                             if(a) cA = a; else{
                                 resolve(joined);
@@ -157,13 +165,13 @@ class Query<FROM extends Table<FROM>>{
                             cB = null;
                         }
                     };
-                    (tableKey === store.keyPath ? store : store.index(tableKey)).openCursor().onsuccess = e=>f("a", e.target.result, null);
-                    (joinKey === joinStore.keyPath ? joinStore : joinStore.index(joinKey)).openCursor().onsuccess = e=>f("b", null, e.target.result);
+                    (tableKey === store.keyPath ? store : store.index(tableKey)).openCursor().onsuccess =(e:any)=>f("a", e.target.result, null);
+                    (joinKey === joinStore.keyPath ? joinStore : joinStore.index(joinKey)).openCursor().onsuccess =(e:any)=>f("b", null, e.target.result);
                 });
             }else{
                 rs = await new Promise((resolve)=>{
-                    const joined = [];
-                    rs.sort((a, b)=>{
+                    const joined:any = [];
+                    rs.sort((a:any, b:any)=>{
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore
                         if(a[joinIndex][joinKey] > b[joinIndex][joinKey]) return 1;
@@ -172,8 +180,8 @@ class Query<FROM extends Table<FROM>>{
                         if(a[joinIndex][joinKey] < b[joinIndex][joinKey]) return -1;
                         return 0;
                     });
-                    let cA, rsIndex = 0;
-                    const f = a=>{
+                    let cA:any, rsIndex = 0;
+                    const f =(a:any)=>{
                         if(a) cA = a; else{
                             resolve(joined);
                             return;
@@ -205,7 +213,7 @@ class Query<FROM extends Table<FROM>>{
                         cA.continue();
                         cA = null;
                     };
-                    (tableKey === store.keyPath ? store : store.index(tableKey)).openCursor().onsuccess = e=>f(e.target.result);
+                    (tableKey === store.keyPath ? store : store.index(tableKey)).openCursor().onsuccess = (e:any)=>f(e.target.result);
                 });
             }
             if(!rs.length) break;
@@ -216,12 +224,12 @@ class Query<FROM extends Table<FROM>>{
             rs = this.where.whereProcess(txStore, rs, params);
             switch(this.#mode){
             case QueryMode.SELECT:{
-                const result = rs.map(r=>this.#fields.reduce((acc, {index, key, toKey})=>{
+                const result = rs.map((r:any)=>this.#fields.reduce((acc, {index, key, toKey})=>{
                     acc[toKey ?? key] = r[index][key];
                     return acc;
                 }, Object.create(null)));
                 if(this.#order.length){
-                    result.sort((a, b)=>{
+                    result.sort((a:any, b:any)=>{
                         const j = this.#order.length;
                         let i = 0;
                         while(i < j){
@@ -236,23 +244,23 @@ class Query<FROM extends Table<FROM>>{
                 break;
             }
             case QueryMode.DELETE:{
-                rs.forEach(r=>r2p(txStore[this.joins[0].table.name].delete(r[0][txStore[0]])))
-                txStore.__tx.oncomplete = _=>resolve;
+                rs.forEach((r:any)=>r2p(txStore[this.joins[0].table.name].delete(r[0][txStore[0]])))
+                txStore.__tx.oncomplete =()=>resolve;
                 break;
             }
             case QueryMode.UPDATE:{
-                rs.map(r=>{
+                rs.map((r:any)=>{
                     const update = this.#setFields.reduce((acc, {key, type, v0, v1})=>{
                         switch(type){
-                        case "v":{
+                        case FieldType.VALUE:{
                             acc[key] = v0;
                             break;
                         }
-                        case "p":{
-                            acc[key] = params[v0][v1];
+                        case FieldType.PARAM:{
+                            if(params[v0]) acc[key] = (params[v0] as any)[v1];
                             break;
                         }
-                        case "j":{
+                        case FieldType.JOIN:{
                             acc[key] = r[v0][v1];
                             break;
                         }
@@ -266,17 +274,17 @@ class Query<FROM extends Table<FROM>>{
                 break;
             }
             case QueryMode.INSERT:{
-                rs.forEach(r=>r2p(txStore[this.joins[0].table.name].add(this.#setFields.reduce((acc, {key, type, v0, v1})=>{
+                rs.forEach((r:any)=>r2p(txStore[this.joins[0].table.name].add(this.#setFields.reduce((acc, {key, type, v0, v1})=>{
                     switch(type){
-                    case "v":{
+                    case FieldType.VALUE:{
                         acc[key] = v0;
                         break;
                     }
-                    case "p":{
-                        acc[key] = params[v0][v1];
+                    case FieldType.PARAM:{
+                        if(params[v0]) acc[key] = (params[v0] as any)[v1];
                         break;
                     }
-                    case "j":{
+                    case FieldType.JOIN:{
                         acc[key] = r[v0][v1];
                         break;
                     }
