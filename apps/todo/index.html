@@ -2,10 +2,38 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Vite + TS</title>
+    <title>KoreDB Todo</title>
   </head>
   <body>
-    <div id="app"></div>
+    <h1>KoreDB Todo</h1>
+    <section>
+      <aside>
+        <section>
+          <h2>User</h2>
+          <div>
+            <select id="userList"></select>
+            <button id="removeUser">Remove user</button>
+          </div>
+          <input type="text" id="userName" placeholder="user name" />
+          <input type="email" id="userEmail" placeholder="user email" />
+          <button id="addUser">Add user</button>
+        </section>
+        <section>
+          <h2>Category</h2>
+            <ul id="categoryList"></ul>
+            <input type="text" id="categoryName" placeholder="category name" />
+            <button id="addCategory">Add category</button>
+        </section>
+      </aside>
+      <section>
+        <h2 id="categoryTitle"></h2>
+        <section>
+          <input type="text" id="todo" placeholder="What needs to be done?" />
+          <button id="addTodo">Add todo</button>
+        </section>
+        <ul id="todoList"></ul>
+      </section>
+    </section>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

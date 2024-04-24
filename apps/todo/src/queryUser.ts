@@ -7,8 +7,8 @@ const qDeleteUser = todoDB.delete(User, (query, u)=>{
 const deleteUser = async (name:string)=> (await qDeleteUser).query({name});
 const qUpdateUser = todoDB.update(User, (query, u)=>{
     query.setFieldParam( "name", 1, "name")
-    query.setFieldParam( "email", 2, "email")
-    query.E(u, "$rowid", 0, "rowid")
+        .setFieldParam( "email", 2, "email")
+        .E(u, "$rowid", 0, "rowid")
 });
 const updateUser = async (user:User)=>{
     if(!user.$rowid) throw new Error("user.$rowid is required");
