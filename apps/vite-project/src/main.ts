@@ -58,6 +58,8 @@ select member.*, memberClub.*, club.*
 from Member member
 left inner join MemberClub memberClub on member.rowid = memberClub.member_rowid
 left inner join Club club on memberClub.club_rowid = club.rowid
+where member.name = "hika" or club.name = "baseball"
+order by memberId, clubId
  */
 const query1 = await testDB.select(Member, (query, m)=>{
     const mc = m.join(MemberClub, "member_rowid", "$rowid")
