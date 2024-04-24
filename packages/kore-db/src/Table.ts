@@ -16,7 +16,6 @@ import {exit} from "./exit.ts";
  */
 // eslint-disable-next-line @typescript-eslint/ban-types
 type FieldOnly<T> = Pick<T, {[k in keyof T]:T[k] extends Function ? never :  k}[keyof T]>;
-
 abstract class Table<TABLE extends Table<TABLE>>{
     static readonly #scaned = new Map();
     static #initScan<T extends Table<T>>(type:new ()=>T){
@@ -56,4 +55,5 @@ abstract class Table<TABLE extends Table<TABLE>>{
         return Object.assign(this, obj);
     }
 }
+
 export { Table };
