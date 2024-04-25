@@ -17,7 +17,7 @@ const qUpdateCategory = todoDB.update(Category, (query, c)=>{
 const updateCategory = async (category:Category)=>{
     if(!category.$rowid) throw new Error("category.$rowid is required");
     const {$rowid:rowid, name} = category;
-    if(name) (await qUpdateCategory).query({rowid}, {name});
+    if(name) await (await qUpdateCategory).query({rowid}, {name});
 }
 
 // Category 목록 조회

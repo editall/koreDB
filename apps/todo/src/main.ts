@@ -39,11 +39,14 @@ const init = async ()=>{
             setCategories();
         });
     };
-    el.addTodo.onclick = ()=>{
+    el.addTodo.onclick = async ()=>{
         const {user, category} = getModel();
-        if(user && category && el.todo.value) insertTodo(el.todo.value).then(()=>{
-            setTodo();
-        });
+        console.log(user, category, el.todo.value);
+        if(user && category && el.todo.value){
+
+            await insertTodo(el.todo.value)
+            await setTodo();
+        }
     }
     if(getModel().category) await setTodo();
 };

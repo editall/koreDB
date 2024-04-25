@@ -7,7 +7,6 @@ export const setCategories = async () => {
     el.categoryList.innerHTML = "";
     const cat = getModel().category;
     (await categoryList()).forEach((c: any) => {
-        console.log(c);
         const li = document.createElement("li");
         li.innerHTML = cat === c.id ? `<strong>${c.name}</strong>` : c.name;
         const trash = document.createElement("span");
@@ -18,6 +17,7 @@ export const setCategories = async () => {
             await deleteCategory(c.id);
             await setCategories();
             await setTodo();
+            el.categoryTitle.innerHTML = c.name;
         });
         li.appendChild(trash);
         li.onclick = async () => {
