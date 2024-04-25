@@ -5,6 +5,7 @@ IndexedDB wrapper like RDB (CRUD, left inner join, where, order)
 ## run sample
 ```bash
 pnpm sample dev
+pnpm todo dev
 ```
 ## Usage
 all code is in [apps/vite-project/src/main.ts](apps/vite-project/src/main.ts)
