@@ -24,7 +24,7 @@ const updateCategory = async (category:Category)=>{
 const qCategoryList = todoDB.select(Category, (query, c)=>{
     query.project(c, "$rowid", "id")
         .project(c, "name")
-        .E(c, "user_rowid", 0, "$rowid")
+        .E(c, "user_rowid", 0, "user")
         .orderBy("name")
 });
 const categoryList = async ()=> (await qCategoryList).query(getModel());
