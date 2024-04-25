@@ -5,9 +5,10 @@ import {getModel, setModel} from "../model.ts";
 
 export const setCategories = async () => {
     el.categoryList.innerHTML = "";
+    const cat =getModel().category;
     (await categoryList()).forEach((c: any) => {
         const li = document.createElement("li");
-        li.innerHTML = getModel().category === c.id ? `<strong>${c.name}</strong>` : c.name;
+        li.innerHTML = cat === c.id ? `<strong>${c.name}</strong>` : c.name;
         li.onclick = () => {
             setModel(undefined, c.id);
             setCategories();

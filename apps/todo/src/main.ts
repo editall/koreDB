@@ -11,7 +11,7 @@ const init = async ()=>{
     await initModel();
     await setUsers();
     el.userList.onchange = ()=>{
-        setModel(parseInt(el.userList.value), undefined);
+        setModel(parseInt(el.userList.value), 0);
     };
     el.removeUser.onclick = async ()=>{
         const id = getModel().user;
