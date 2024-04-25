@@ -6,7 +6,8 @@ class Model extends Table<Model> {
     category!:number;
 }
 class Category extends Table<Category> {
-    $rowid!: number;
+    $rowid!:number;
+    user_rowid!:number;
     name!: string;
 }
 class Tag extends Table<Tag> {

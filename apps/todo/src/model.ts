@@ -19,11 +19,9 @@ const qSet = todoDB.update(Model, (query, m)=>{
         .E(m, "$rowid", 0, "$rowid")
 });
 const setModel = async (user:number|undefined, category:number|undefined)=>{
-    console.log("setModel", user, category);
     if(user !== undefined) model.user = user;
     if(category !== undefined) model.category = category;
     if(user !== undefined || category !== undefined){
-        console.log("setModel", user, category, model);
         await (await qSet).query(model);
     }
 }

@@ -1,6 +1,7 @@
 import {Category, todoDB} from "../db.ts";
+import {getModel} from "../model.ts";
 
-const insertCategory = async (name:string)=> await todoDB.insert(Category, new Category().from({name}));
+const insertCategory = async (name:string)=> await todoDB.insert(Category, new Category().from({name, user_rowid:getModel().user}));
 
 // Category 삭제
 const qDeleteCategory = todoDB.delete(Category, (query, c)=>{
@@ -23,8 +24,9 @@ const updateCategory = async (category:Category)=>{
 const qCategoryList = todoDB.select(Category, (query, c)=>{
     query.project(c, "$rowid", "id")
         .project(c, "name")
+        .E(c, "user_rowid", 0, "$rowid")
         .orderBy("name")
 });
-const categoryList = async ()=> (await qCategoryList).query();
+const categoryList = async ()=> (await qCategoryList).query(getModel());
 
 export {insertCategory, deleteCategory, updateCategory, categoryList};

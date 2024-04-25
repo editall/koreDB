@@ -14,13 +14,9 @@ const init = async ()=>{
         setModel(parseInt(el.userList.value), undefined);
     };
     el.removeUser.onclick = async ()=>{
-        console.log("removeUser")
         const id = getModel().user;
-        console.log("removeUser", id)
         if(id){
-            console.log("A")
             await deleteUser(id);
-            console.error("c");
             await setModel(0, undefined);
             setUsers();
         }
@@ -36,6 +32,7 @@ const init = async ()=>{
     };
     await setCategories();
     el.addCategory.onclick = ()=>{
+        if(!getModel().user) throw new Error("Select a user first");
         if(el.categoryName.value) insertCategory(el.categoryName.value).then(()=>{
             el.categoryName.value = "";
             setCategories();
