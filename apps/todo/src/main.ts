@@ -1,30 +1,35 @@
 import {deleteUser, insertUser} from "./dto/dtoUser.ts";
 import {el} from "./el.ts";
-import {model} from "./model.ts";
 import {setUsers} from "./comp/setUsers.ts";
 import {setCategories} from "./comp/setCategories.ts";
 import {setTodo} from "./comp/setTodo.ts";
 import {insertCategory} from "./dto/dtoCategory.ts";
 import {insertTodo} from "./dto/dtoTodo.ts";
+import {getModel, initModel, setModel} from "./model.ts";
 
-const init = ()=>{
+const init = async ()=>{
+    await initModel();
+    await setUsers();
     el.userList.onchange = ()=>{
-        model.currentUser = parseInt(el.userList.value);
+        setModel(parseInt(el.userList.value), undefined);
     };
     el.removeUser.onclick = ()=>{
-        if(model.currentUser) deleteUser(model.currentUser).then(()=>{
-            model.currentUser = 0;
+        const id = getModel().user;
+        if(id) deleteUser(id).then(()=>{
+            setModel(0, undefined);
             setUsers();
         });
     };
     el.addUser.onclick = ()=>{
-        if(el.userName.value && el.userEmail.value) insertUser(el.userName.value, el.userEmail.value).then(()=>{
-            el.userName.value = "";
-            el.userEmail.value = "";
-            setUsers();
-        });
+        const name = el.userName.value, email = el.userEmail.value;
+        if(name && email){
+            el.userName.value = el.userEmail.value = "";
+            insertUser(name, email).then(()=>{
+                setUsers();
+            });
+        }
     };
-    setCategories();
+    await setCategories();
     el.addCategory.onclick = ()=>{
         if(el.categoryName.value) insertCategory(el.categoryName.value).then(()=>{
             el.categoryName.value = "";
@@ -32,10 +37,11 @@ const init = ()=>{
         });
     };
     el.addTodo.onclick = ()=>{
-        if(model.currentUser && model.currentCategory && el.todo.value) insertTodo(el.todo.value).then(()=>{
+        const {user, category} = getModel();
+        if(user && category && el.todo.value) insertTodo(el.todo.value).then(()=>{
             setTodo();
         });
     }
-    if(model.currentCategory) setTodo();
+    if(getModel().category) setTodo();
 };
-init();
+await init();

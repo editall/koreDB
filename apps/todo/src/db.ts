@@ -1,5 +1,10 @@
 import {CreateTable, DB, Table} from "@edit-all/kore-db";
 
+class Model extends Table<Model> {
+    $rowid!:number;
+    user!:number;
+    category!:number;
+}
 class Category extends Table<Category> {
     $rowid!: number;
     name!: string;
@@ -32,9 +37,10 @@ class TodoDB extends DB {
         table(Tag).index("name");
         table(Todo).index("title").index("isDone").index("when");
         table(User).index("name").index("email");
+        table(Model);
     }
     async onInit(): Promise<void> {
-        console.log("onInit");
+        await this.insert(Model, new Model().from({user:0, category:0}));
     }
     onError(e: Event): void {
         console.error(e);
@@ -42,4 +48,4 @@ class TodoDB extends DB {
 }
 const todoDB = new TodoDB();
 
-export { Category, Tag, Todo, User, todoDB };
+export { Model, Category, Tag, Todo, User, todoDB };

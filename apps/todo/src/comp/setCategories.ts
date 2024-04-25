@@ -1,15 +1,15 @@
 import {el} from "../el.ts";
 import {categoryList} from "../dto/dtoCategory.ts";
-import {model} from "../model.ts";
 import {setTodo} from "./setTodo.ts";
+import {getModel} from "../model.ts";
 
 export const setCategories = async () => {
     el.categoryList.innerHTML = "";
     (await categoryList()).forEach((c: any) => {
         const li = document.createElement("li");
-        li.innerHTML = model.currentCategory === c.id ? `<strong>${c.name}</strong>` : c.name;
+        li.innerHTML = getModel().category === c.id ? `<strong>${c.name}</strong>` : c.name;
         li.onclick = () => {
-            model.currentCategory = c.id;
+            getModel().category = c.id;
             setCategories();
             setTodo();
         };

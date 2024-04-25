@@ -92,7 +92,7 @@ class Query<FROM extends Table<FROM>>{
         this.where.connector("or");
         return this;
     }
-    async query(...params:object[]){
+    async query(...params:(object|null)[]){
         switch(this.#mode){
         case QueryMode.SELECT:{if(!this.#fields.length) throw new Error("no projection field"); break;}
         case QueryMode.UPDATE:{if(!this.#setFields.length) throw new Error("no update field"); break;}

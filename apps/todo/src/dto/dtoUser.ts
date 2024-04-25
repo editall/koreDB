@@ -1,6 +1,6 @@
 import {todoDB, User} from "../db.ts";
 
-const insertUser = async (name:string, email:string)=> await todoDB.insert(User, new User().from({name, email}));
+const insertUser = async (name:string, email:string)=> todoDB.insert(User, new User().from({name, email}));
 const qDeleteUser = todoDB.delete(User, (query, u)=>{
     query.E(u, "$rowid", 0, "id")
 });
@@ -13,9 +13,9 @@ const qUpdateUser = todoDB.update(User, (query, u)=>{
 const updateUser = async (user:User)=>{
     if(!user.$rowid) throw new Error("user.$rowid is required");
     const q = (await qUpdateUser), {$rowid:rowid, name, email} = user;
-    if(name && email) q.query({rowid}, {name}, {email});
-    else if(name) q.query({rowid}, {name});
-    else if(email) q.query({rowid}, {email});
+    if(name && email) return q.query({rowid}, {name}, {email});
+    else if(name) return q.query({rowid}, {name});
+    else if(email) return q.query({rowid}, null, {email});
 }
 const qUserList = todoDB.select(User, (query, u)=>{
     query.project(u, "$rowid", "id")

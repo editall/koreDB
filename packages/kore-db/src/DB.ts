@@ -104,7 +104,7 @@ abstract class DB{
         const keyPath = Table.keyPath(table);
         data.forEach(d=>{
             if(isAutoIncrement) delete (d as any)[keyPath];
-            store.add(d)
+            store.add(d);
         });
         return r2p(tx) as Promise<void>;
     }
