@@ -8,22 +8,20 @@ import {insertTodo} from "./dto/dtoTodo.ts";
 import {getModel, initModel, setModel} from "./model.ts";
 
 const init = async ()=>{
-    await initModel();
-    await setUsers();
     el.userList.onchange = async ()=>{
         await setModel(parseInt(el.userList.value), 0);
-        await setCategories();
+        await setUsers();
     };
     el.removeUser.onclick = async ()=>{
         const id = getModel().user;
         if(id){
             await deleteUser(id);
-            await setModel(0, undefined);
+            await setModel(0, 0);
             await setUsers();
-            await setCategories();
         }
     };
-    el.addUser.onclick = async()=>{
+    el.userName.onkeydown = el.userEmail.onkeydown = el.addUser.onclick = async(e:Event)=>{
+        if(e instanceof KeyboardEvent && e.key !== "Enter") return;
         const name = el.userName.value, email = el.userEmail.value;
         if(name && email){
             el.userName.value = el.userEmail.value = "";
@@ -31,23 +29,23 @@ const init = async ()=>{
             await setUsers();
         }
     };
-    await setCategories();
-    el.addCategory.onclick = ()=>{
+    el.categoryName.onkeydown = el.addCategory.onclick = async(e:Event)=>{
+        if(e instanceof KeyboardEvent && e.key !== "Enter") return;
         if(!getModel().user) throw new Error("Select a user first");
         if(el.categoryName.value) insertCategory(el.categoryName.value).then(()=>{
             el.categoryName.value = "";
             setCategories();
         });
     };
-    el.addTodo.onclick = async ()=>{
+    el.todoTitle.onkeydown = el.addTodo.onclick = async(e:Event)=>{
+        if(e instanceof KeyboardEvent && e.key !== "Enter") return;
         const {user, category} = getModel();
-        console.log(user, category, el.todoTitle.value);
         if(user && category && el.todoTitle.value){
-
             await insertTodo(el.todoTitle.value)
             await setTodo();
         }
-    }
-    if(getModel().category) await setTodo();
+    };
+    await initModel();
+    await setUsers();
 };
 await init();

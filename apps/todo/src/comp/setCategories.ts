@@ -27,4 +27,5 @@ export const setCategories = async () => {
         };
         el.categoryList.appendChild(li);
     });
+    await setTodo();
 };
