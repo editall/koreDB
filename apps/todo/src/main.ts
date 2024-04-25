@@ -41,10 +41,10 @@ const init = async ()=>{
     };
     el.addTodo.onclick = async ()=>{
         const {user, category} = getModel();
-        console.log(user, category, el.todo.value);
-        if(user && category && el.todo.value){
+        console.log(user, category, el.todoTitle.value);
+        if(user && category && el.todoTitle.value){
 
-            await insertTodo(el.todo.value)
+            await insertTodo(el.todoTitle.value)
             await setTodo();
         }
     }

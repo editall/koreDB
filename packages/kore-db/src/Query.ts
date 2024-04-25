@@ -266,8 +266,7 @@ class Query<FROM extends Table<FROM>>{
                         }
                         }
                         return acc;
-                    }, Object.create(null));
-                    update[txStore[0]] = r[0][txStore[0]];
+                    }, r[0]);
                     r2p(txStore[this.joins[0].table.name].put(update))
                 });
                 txStore.__tx.oncomplete = resolve;
