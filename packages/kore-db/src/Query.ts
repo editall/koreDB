@@ -245,7 +245,7 @@ class Query<FROM extends Table<FROM>>{
             }
             case QueryMode.DELETE:{
                 rs.forEach((r:any)=>r2p(txStore[this.joins[0].table.name].delete(r[0][txStore[0]])))
-                txStore.__tx.oncomplete =()=>resolve;
+                txStore.__tx.oncomplete = resolve;
                 break;
             }
             case QueryMode.UPDATE:{

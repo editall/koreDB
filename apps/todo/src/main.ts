@@ -18,7 +18,9 @@ const init = async ()=>{
         const id = getModel().user;
         console.log("removeUser", id)
         if(id){
+            console.log("A")
             await deleteUser(id);
+            console.error("c");
             await setModel(0, undefined);
             setUsers();
         }
