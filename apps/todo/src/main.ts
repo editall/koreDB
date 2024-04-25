@@ -45,6 +45,6 @@ const init = async ()=>{
             setTodo();
         });
     }
-    if(getModel().category) setTodo();
+    if(getModel().category) await setTodo();
 };
 await init();
