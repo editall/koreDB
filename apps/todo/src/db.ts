@@ -21,11 +21,13 @@ class Todo extends Table<Todo> {
     title!: string;
     content!: string;
     isDone!: boolean;
-    when!: Date;
+    when!: Date|string;
     tags!: number[];
     subTodos!: number[];
-    owner_rowid!: number;
     assignee_rowid!: number;
+    getWhenDate(): Date {
+        return typeof this.when === "string" ? new Date(this.when) : this.when;
+    }
 }
 class User extends Table<User> {
     $rowid!: number;

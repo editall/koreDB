@@ -30,7 +30,7 @@ class TableWrapper<TABLE extends Table<TABLE>>{
  * @returns {TableWrapper} TableWrapper that owns an "index" method for creating an index.
  */
 type CreateTable = <TABLE extends Table<TABLE>>(tableClass:new ()=>TABLE)=>TableWrapper<TABLE>;
-type QueryBlock = (query:Query<any>, from:Join<any>)=>void;
+type QueryBlock<FROM extends Table<FROM>> = (query:Query<FROM>, from:Join<FROM>)=>void;
 
 abstract class DB{
     readonly #openAwait:Promise<void>;
@@ -108,7 +108,7 @@ abstract class DB{
         });
         return r2p(tx) as Promise<void>;
     }
-    async #query<FROM extends Table<FROM>>(mode:QueryMode, from:new ()=>FROM, block:QueryBlock):Promise<Query<FROM>>{
+    async #query<FROM extends Table<FROM>>(mode:QueryMode, from:new ()=>FROM, block:QueryBlock<FROM>):Promise<Query<FROM>>{
         this.#isFirst || await this.#openAwait;
         return new Query(mode, from, this, block);
     }
@@ -118,7 +118,7 @@ abstract class DB{
      * @param {QueryBlock} block - The query block to execute.
      * @returns {Promise<Query<FROM>>} A promise that resolves with the query result.
      */
-    async select<FROM extends Table<FROM>>(from:new ()=>FROM, block:QueryBlock):Promise<Query<FROM>>{
+    async select<FROM extends Table<FROM>>(from:new ()=>FROM, block:QueryBlock<FROM>):Promise<Query<FROM>>{
         return this.#query(QueryMode.SELECT, from, block);
     }
     /**
@@ -127,7 +127,7 @@ abstract class DB{
      * @param {QueryBlock} block - The query block to execute.
      * @returns {Promise<Query<FROM>>} A promise that resolves with the query result.
      */
-    async update<FROM extends Table<FROM>>(from:new ()=>FROM, block:QueryBlock):Promise<Query<FROM>>{
+    async update<FROM extends Table<FROM>>(from:new ()=>FROM, block:QueryBlock<FROM>):Promise<Query<FROM>>{
         return this.#query(QueryMode.UPDATE, from, block);
     }
     /**
@@ -136,7 +136,7 @@ abstract class DB{
      * @param {QueryBlock} block - The query block to execute.
      * @returns {Promise<Query<FROM>>} A promise that resolves with the query result.
      */
-    async delete<FROM extends Table<FROM>>(from:new ()=>FROM, block:QueryBlock):Promise<Query<FROM>>{
+    async delete<FROM extends Table<FROM>>(from:new ()=>FROM, block:QueryBlock<FROM>):Promise<Query<FROM>>{
         return this.#query(QueryMode.DELETE, from, block);
     }
     /**
@@ -145,7 +145,7 @@ abstract class DB{
      * @param {QueryBlock} block - The query block to execute.
      * @returns {Promise<Query<FROM>>} A promise that resolves with the query result.
      */
-    async insertSelect<FROM extends Table<FROM>>(from:new ()=>FROM, block:QueryBlock):Promise<Query<FROM>>{
+    async insertSelect<FROM extends Table<FROM>>(from:new ()=>FROM, block:QueryBlock<FROM>):Promise<Query<FROM>>{
         return this.#query(QueryMode.INSERT, from, block);
     }
 }

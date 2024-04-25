@@ -32,16 +32,20 @@ const init = async ()=>{
     el.categoryName.onkeydown = el.addCategory.onclick = async(e:Event)=>{
         if(e instanceof KeyboardEvent && e.key !== "Enter") return;
         if(!getModel().user) throw new Error("Select a user first");
-        if(el.categoryName.value) insertCategory(el.categoryName.value).then(()=>{
+        if(el.categoryName.value){
+            const v = el.categoryName.value;
             el.categoryName.value = "";
-            setCategories();
-        });
+            await insertCategory(v);
+            await setCategories();
+        }
     };
     el.todoTitle.onkeydown = el.addTodo.onclick = async(e:Event)=>{
         if(e instanceof KeyboardEvent && e.key !== "Enter") return;
         const {user, category} = getModel();
         if(user && category && el.todoTitle.value){
-            await insertTodo(el.todoTitle.value)
+            const v = el.todoTitle.value;
+            el.todoTitle.value = "";
+            await insertTodo(v)
             await setTodo();
         }
     };
