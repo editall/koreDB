@@ -24,7 +24,7 @@ class Query<FROM extends Table<FROM>>{
         this.joins.push(join);
         block(this, join);
     }
-    project<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, toKey:string){
+    project<TABLE extends Table<TABLE>>(join:Join<TABLE>, key:keyof TABLE, toKey:string = String(key)){
         this.#fields.push({index:this.joins.indexOf(join), key:String(key), toKey});
         return this;
     }

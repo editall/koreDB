@@ -1,10 +1,10 @@
-import {todoDB, User} from "./db";
+import {todoDB, User} from "../db.ts";
 
 const insertUser = async (name:string, email:string)=> await todoDB.insert(User, new User().from({name, email}));
 const qDeleteUser = todoDB.delete(User, (query, u)=>{
-    query.E(u, "name", 0, "name")
+    query.E(u, "$rowid", 0, "id")
 });
-const deleteUser = async (name:string)=> (await qDeleteUser).query({name});
+const deleteUser = async (id:number)=> (await qDeleteUser).query({id});
 const qUpdateUser = todoDB.update(User, (query, u)=>{
     query.setFieldParam( "name", 1, "name")
         .setFieldParam( "email", 2, "email")
@@ -17,9 +17,12 @@ const updateUser = async (user:User)=>{
     else if(name) q.query({rowid}, {name});
     else if(email) q.query({rowid}, {email});
 }
-const qSelectUser = todoDB.select(User, (query, u)=>{
-    query.E(u, "$rowid", 0, "rowid")
+const qUserList = todoDB.select(User, (query, u)=>{
+    query.project(u, "$rowid", "id")
+        .project(u, "name")
+        .project(u, "email")
+        .orderBy("name")
 });
-const selectUser = async (rowid:number)=> (await qSelectUser).query({rowid});
+const userList = async ()=> (await qUserList).query();
 
-export {insertUser, deleteUser, updateUser, selectUser};
+export {insertUser, deleteUser, updateUser, userList};
