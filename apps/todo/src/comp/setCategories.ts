@@ -7,16 +7,18 @@ export const setCategories = async () => {
     el.categoryList.innerHTML = "";
     const cat = getModel().category;
     (await categoryList()).forEach((c: any) => {
+        console.log(c);
         const li = document.createElement("li");
         li.innerHTML = cat === c.id ? `<strong>${c.name}</strong>` : c.name;
         const trash = document.createElement("span");
         trash.innerHTML = "🗑️";
-        trash.onclick = async () => {
+        trash.addEventListener("click", async (e) => {
+            e.stopImmediatePropagation();
             if(getModel().category === c.id) await setModel(undefined, 0);
             await deleteCategory(c.id);
             await setCategories();
             await setTodo();
-        };
+        });
         li.appendChild(trash);
         li.onclick = async () => {
             await setModel(undefined, c.id);
