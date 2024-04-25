@@ -4,8 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "site": "pnpm --filter=vite-project",
-    "siteDev": "pnpm site dev",
+    "sample": "pnpm --filter=sample",
+    "sampleDev": "pnpm sample dev",
+    "todo": "pnpm --filter=todo",
+    "todoDev": "pnpm todo dev",
     "kore-db": "pnpm --filter=@edit-all/kore-db",
     "lint": "pnpm -r lint",
     "test": "echo \"Error: no test specified\" && exit 1"

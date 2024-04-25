@@ -7,7 +7,7 @@ IndexedDB wrapper like RDB (CRUD, left inner join, where, order)
 pnpm site dev
 ```
 ## Usage
-all code is in [apps/vite-project/src/main.ts](apps/vite-project/src/main.ts)
+all code is in [apps/vite-project/src/main.ts](apps/sample/src/main.ts)
 
 ### 1. Define schema
 Defining a static schema by inheriting from the Table class.
