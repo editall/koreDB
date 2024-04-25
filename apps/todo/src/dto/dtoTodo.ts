@@ -1,11 +1,11 @@
 
 // Todo 생성
 import {Todo, todoDB} from "../db.ts";
-import {model} from "../model.ts";
+import {getModel} from "../model.ts";
 
 const insertTodo = async (title:string)=> await todoDB.insert(Todo, new Todo().from({
-    title, content:"", isDone:false, when:new Date(0), subTodos:[], owner_rowid:model.currentUser, assignee_rowid:0,
-    parent_rowid:0, category_rowid:model.currentCategory, tags:[]
+    title, content:"", isDone:false, when:new Date(0), subTodos:[], owner_rowid:getModel().user, assignee_rowid:0,
+    parent_rowid:0, category_rowid:getModel().category, tags:[]
 }));
 
 // Todo 삭제
