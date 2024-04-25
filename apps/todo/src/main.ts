@@ -10,24 +10,25 @@ import {getModel, initModel, setModel} from "./model.ts";
 const init = async ()=>{
     await initModel();
     await setUsers();
-    el.userList.onchange = ()=>{
-        setModel(parseInt(el.userList.value), 0);
+    el.userList.onchange = async ()=>{
+        await setModel(parseInt(el.userList.value), 0);
+        await setCategories();
     };
     el.removeUser.onclick = async ()=>{
         const id = getModel().user;
         if(id){
             await deleteUser(id);
             await setModel(0, undefined);
-            setUsers();
+            await setUsers();
+            await setCategories();
         }
     };
-    el.addUser.onclick = ()=>{
+    el.addUser.onclick = async()=>{
         const name = el.userName.value, email = el.userEmail.value;
         if(name && email){
             el.userName.value = el.userEmail.value = "";
-            insertUser(name, email).then(()=>{
-                setUsers();
-            });
+            await insertUser(name, email);
+            await setUsers();
         }
     };
     await setCategories();

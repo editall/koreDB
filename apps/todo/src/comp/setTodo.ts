@@ -1,3 +1,3 @@
-export const setTodo = () => {
+export const setTodo = async () => {
 
 };
