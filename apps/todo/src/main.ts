@@ -13,12 +13,15 @@ const init = async ()=>{
     el.userList.onchange = ()=>{
         setModel(parseInt(el.userList.value), undefined);
     };
-    el.removeUser.onclick = ()=>{
+    el.removeUser.onclick = async ()=>{
+        console.log("removeUser")
         const id = getModel().user;
-        if(id) deleteUser(id).then(()=>{
-            setModel(0, undefined);
+        console.log("removeUser", id)
+        if(id){
+            await deleteUser(id);
+            await setModel(0, undefined);
             setUsers();
-        });
+        }
     };
     el.addUser.onclick = ()=>{
         const name = el.userName.value, email = el.userEmail.value;
