@@ -21,8 +21,8 @@ class Todo extends Table<Todo> {
     content!: string;
     isDone!: boolean;
     when!: Date;
-    tags!: Tag[];
-    subTodos!: Todo[];
+    tags!: number[];
+    subTodos!: number[];
     owner_rowid!: number;
     assignee_rowid!: number;
 }
